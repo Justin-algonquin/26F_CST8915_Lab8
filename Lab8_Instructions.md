@@ -103,23 +103,21 @@ Create an AKS cluster with two worker nodes for this exercise. For this step, yo
    | `AZURE_OPENAI_DALLE_ENDPOINT` | Image resource endpoint |
    | `AZURE_OPENAI_DALLE_DEPLOYMENT_NAME` | Your GPT Image deployment name |
 
-4. From `Deployment Files`, create a **private copy outside your repository** of the example Secret manifest.
+4. In `Deployment Files`, copy the template to `secrets.yaml`.
 
    ```bash
-   mkdir -p "$HOME/.config/cst8915/lab8"
-   LAB8_SECRET_FILE="$HOME/.config/cst8915/lab8/secrets.yaml"
-   install -m 600 secrets.example.yaml "$LAB8_SECRET_FILE"
+   cp secrets.example.yaml secrets.yaml
    ```
 
-5. Edit the private copy and replace each placeholder with the corresponding Azure resource key. If both deployments use the same resource, enter its key in both fields. The example uses Kubernetes `stringData`, so enter the keys as supplied. Keep credentials out of your submission, screenshots, and video.
+5. Edit `secrets.yaml` and replace each placeholder with the corresponding Azure resource key. If both deployments use the same resource, enter its key in both fields. The example uses Kubernetes `stringData`, so enter the keys as supplied. Keep credentials out of your submission, screenshots, and video.
 
 ## Step 4: Deploy the ConfigMap and Secrets
 
-Run these commands from `Deployment Files` in the same terminal where you set `LAB8_SECRET_FILE`. For the Brightspace path, this variable points to the file you downloaded. For the Azure path, it points to your private copy.
+Run these commands from `Deployment Files`, where you saved `secrets.yaml`. The lab's `.gitignore` already excludes this file. Keep it out of Git commits.
 
 ```bash
 kubectl apply -f config-maps.yaml
-kubectl apply -f "$LAB8_SECRET_FILE"
+kubectl apply -f secrets.yaml
 kubectl get configmap rabbitmq-enabled-plugins
 kubectl get secret openai-gpt-api-secret openai-dalle-api-secret
 ```
