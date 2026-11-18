@@ -1,60 +1,28 @@
-# Student Guide: AI Service Configuration for Lab 8
+# Lab 8 student guide for direct OpenAI access
 
-## Overview
-Azure for Students subscriptions do not include access to Azure OpenAI resources. For this lab, a shared OpenAI API key has been provisioned by your instructor. This replaces **Step 3** in the lab instructions — you do **not** need to create any Azure OpenAI resources.
+Use this guide for Step 3 if your Azure for Students subscription cannot access the required Azure AI resources or models. You will still deploy the pet store to AKS. The instructor provides credentials through Brightspace for product descriptions and images using the direct OpenAI API at `api.openai.com`.
 
----
+## Step 3. Configure the Brightspace credentials
 
-## Step 3 (Revised): Configure the AI Backing Services
+1. Download `secrets.yaml` from Brightspace. Keep it outside every Git repository, for example in your Downloads folder. Use the file as supplied. The two Secret names and key fields are already set.
+2. From the lab's `Deployment Files` directory, set the path to your downloaded file in your terminal. Adjust the path if you saved it elsewhere.
 
-### 1. Download the `secrets.yaml` File
-- Download the `secrets.yaml` file from **Brightspace**
-- Save it in your `Deployment Files` folder
-- **Do not modify this file** — it contains the shared API key and is ready to use as-is
-- **Do not push this file to any public GitHub repository** — add `secrets.yaml` to your `.gitignore`
-  > **⚠️ WARNING:** Any student who fails to comply with this and pushes the `secrets.yaml` file to a public repository will receive a **grade of zero**. This is **non-negotiable**.
+   ```bash
+   LAB8_SECRET_FILE="$HOME/Downloads/secrets.yaml"
+   ```
 
-### 2. Skip the Rest of Step 3
-You do **not** need to:
-- Create an Azure OpenAI resource
-- Deploy GPT-4 or DALL-E 3 models
-- Retrieve or Base64-encode any API keys
-- Modify the `aps-all-in-one.yaml` file for AI configuration
-
-The `aps-all-in-one.yaml` file is already configured to use the direct OpenAI API with the following models:
-- **gpt-4o-mini** for product description generation
-- **DALL-E 3** for product image generation
-
-### 3. Continue with Step 4
-Proceed with **Step 4** in the lab instructions as normal:
-```bash
-kubectl apply -f config-maps.yaml
-kubectl apply -f secrets.yaml
-```
-
-All other lab steps (Step 5 through Step 8) remain unchanged.
-
----
+3. Use the provided AI deployment settings in `aps-all-in-one.yaml` for this path. `USE_AZURE_OPENAI` is `"False"`, and the manifest selects `gpt-4o-mini` for descriptions and `gpt-image-2.6-flare` for images. The two Secret names retain their existing names for compatibility with Brightspace.
+4. Continue at [Step 4 in the lab instructions](./Lab8_Instructions.md#step-4-deploy-the-configmap-and-secrets) in the same terminal. That step applies the ConfigMap and both Secrets, and verifies their names without displaying their contents.
 
 ## Troubleshooting
 
-| Issue | Solution |
-| ----- | -------- |
-| `401 Unauthorized` error from AI service | Make sure you are using the `secrets.yaml` downloaded from Brightspace, not the template from the repo. |
-| `429 Rate limit exceeded` | The shared API has rate limits. Wait a few seconds and retry. |
-| `402 Insufficient quota` | The shared credit has been exhausted. Contact your instructor. |
-| AI descriptions work but image generation does not | Check the ai-service pod logs: `kubectl logs deployment/ai-service`. Report the error to your instructor. |
-| AI service pod is in `CrashLoopBackOff` | Verify the secrets were applied: `kubectl get secrets`. You should see `openai-gpt-api-secret` and `openai-dalle-api-secret`. If not, re-run `kubectl apply -f secrets.yaml`. |
+| Symptom | What to check |
+| --- | --- |
+| The AI pod shows `CreateContainerConfigError` | Run `kubectl describe pod <ai-pod-name>`. Check that both named Secrets were applied in the same namespace as the pod. |
+| The app reports an invalid credential (401) | Apply the current Brightspace file. If the pod was already running, use `kubectl rollout restart deployment/ai-service` to reload its environment. |
+| The app reports unavailable model access (403 or 404) | Check that the app is using the direct OpenAI settings, then contact your instructor with the error and model name. |
+| The app reports a rate limit or exhausted quota (429) | Wait briefly before retrying. Contact your instructor if the error persists. |
 
----
+The credentials are shared with your class. Use them to test the lab, and check Brightspace for the current deadline and credential availability. Keep the file out of repositories, recordings, and screenshots, and do not share it outside the class.
 
-## Important Notes
-- **Do not modify the `secrets.yaml` file** — it contains the shared API key and is ready to use as-is
-- **Do not push `secrets.yaml` to any public GitHub repository** — this would expose the shared API key and compromise it for the entire class
-- **Do not share this file** outside of this class
-- The shared API key has **rate limits** — if you get a `429` error, wait a moment and try again
-- The key will be **automatically revoked on April 2, 2026 at 11:59 PM** (same as the lab due date)
-
-> **⚠️ Be Mindful of AI API Usage**
->
-> The AI API key is **shared with the entire class**. Please use the AI service only to test your application and verify that the AI feature (product description and image generation) works correctly. Once you have confirmed it is working, **do not continue making unnecessary requests**. Excessive usage consumes the shared credit and may cause the API to become unavailable for your classmates. Be considerate and keep your testing to a minimum.
+> **Grading policy.** Publishing the populated `secrets.yaml` file in a public repository results in a grade of zero.

@@ -46,7 +46,7 @@ A **StatefulSet** is a Kubernetes resource used to manage stateful applications.
 - Message queues like RabbitMQ.
 
 ### **Secrets**
-A **Secret** is a Kubernetes resource used to store sensitive information, such as API keys, passwords, or tokens. Secrets help keep sensitive data secure by encoding it and restricting access.
+A **Secret** is a Kubernetes resource used to store sensitive information, such as API keys, passwords, or tokens. Use Kubernetes access controls to limit who can read Secrets. Anyone who can read their Base64-encoded values can decode them.
 
 #### **Key Features of Secrets**:
 1. **Base64 Encoding**:
@@ -77,7 +77,7 @@ Easy to update and manage configurations independently of application code.
 
 ## Step 1: Clone the Algonquin Pet Store Repository
 
-To begin, clone the [**Algonquin Pet Store (On Steroids)**](https://github.com/ramymohamed10/algonquin-pet-store-on-steroids) repository, which contains all necessary deployment files.
+Clone the course repository containing this handout and open its [Deployment Files](./Deployment%20Files/) directory. Use the manifests from this Lab 8 release throughout the exercise.
 
  **Review the Deployment Files**:
    - Navigate to the `Deployment Files` folder
@@ -88,105 +88,41 @@ To begin, clone the [**Algonquin Pet Store (On Steroids)**](https://github.com/r
 Create an AKS cluster with two worker nodes for this exercise. For this step, you can refer to **Lab 6**
 
 ## Step 3: Set Up the AI Backing Services
-To enable AI-generated product descriptions and image generation features, you will deploy the required **Azure OpenAI Services** for GPT-4 (text generation) and DALL-E 3 (image generation). This step is essential to configure the **AI Service** component in the Algonquin Pet Store application.
+**If your Azure for Students subscription does not include access to the Azure AI resources or model deployments required for this lab, follow the [Student Guide for OpenAI](./Student_Guide_OpenAI.md).** Use the two credentials provided through Brightspace for the direct OpenAI API, then resume at Step 4. Students who have Azure access can use the following steps.
 
-### Task 1: Create an Azure OpenAI Service Instance
+### Deploy the text and image models on Azure
 
-1. **Navigate to Azure Portal**:
-   - Go to the [Azure Portal](https://portal.azure.com/).
+1. Open Microsoft Foundry and select or create an Azure OpenAI resource in a region where your subscription has quota for the models. The text and image deployments can use different resources.
+2. Deploy a Chat Completions model for product descriptions (for example, `gpt-4.1-mini` where available) and a GPT Image model for product photos (for example, `gpt-image-2`). Record the **deployment name** you gave each model and the resource endpoint shown in the portal. [Azure image model availability and setup](https://learn.microsoft.com/en-us/azure/foundry/openai/how-to/dall-e)
+3. In the `ai-service` section of `aps-all-in-one.yaml`, set `USE_AZURE_OPENAI` to `"True"`. Fill in the following environment variables. The service appends the Azure OpenAI v1 API path to each resource endpoint.
 
-2. **Create a Resource**:
-   - Select **Create a Resource** from the Azure portal dashboard.
-   - Search for **Azure OpenAI** in the marketplace.
+   | Variable | Value |
+   | --- | --- |
+   | `AZURE_OPENAI_GPT_ENDPOINT` | Text resource endpoint, e.g. `https://<resource>.openai.azure.com` |
+   | `AZURE_OPENAI_GPT_DEPLOYMENT_NAME` | Your text deployment name |
+   | `AZURE_OPENAI_DALLE_ENDPOINT` | Image resource endpoint |
+   | `AZURE_OPENAI_DALLE_DEPLOYMENT_NAME` | Your GPT Image deployment name |
 
-3. **Set Up the Azure OpenAI Resource**:
-   - Choose the **East US** region for deployment to ensure capacity for GPT-4 and DALL-E 3 models.
-   - Fill in the required details:
-     - Resource group: Use an existing one or create a new group.
-     - Pricing tier: Select `Standard`.
+4. From `Deployment Files`, create a **private copy outside your repository** of the example Secret manifest.
 
-4. **Deploy the Resource**:
-   - Click **Review + Create** and then **Create** to deploy the Azure OpenAI service.
-
----
-
-### Task 2: Deploy the GPT-4 and DALL-E 3 Models
-
-1. **Access the Azure OpenAI Resource**:
-   - Navigate to the Azure OpenAI resource you just created.
-
-2. **Deploy GPT-4**:
-   - Go to the **Model Deployments** section and click **Add Deployment**.
-   - Choose **GPT-4** as the model and provide a deployment name (e.g., `gpt-4-deployment`).
-   - Set the deployment configuration as required and deploy the model.
-
-3. **Deploy DALL-E 3**:
-   - Repeat the same process to deploy **DALL-E 3**.
-   - Use a descriptive deployment name (e.g., `dalle-3-deployment`).
-
-4. **Note Configuration Details**:
-   - Once deployed, note down the following details for each model:
-     - Deployment Name
-     - Endpoint URL
-
----
-
-### Task 3: Retrieve and Configure API Keys
-
-1. **Get API Keys**:
-   - Go to the **Keys and Endpoints** section of your Azure OpenAI resource.
-   - Copy the **API Key (API key 1)** and **Endpoint URL**.
-
-2. **Base64 Encode the API Key**:
-   - Use the following command to Base64 encode your API key:
-     ```bash
-     echo -n "<your-api-key>" | base64
-     ```
-   - Replace `<your-api-key>` with your actual API key.
-
----
-
-### Task 4: Update AI Service Deployment Configuration in the `Deployment Files` folder.
-1. **Modify Secretes YAML**:
-   - Edit the `secrets.yaml` file.
-   - Replace `OPENAI_API_KEY` placeholder with the Base64-encoded value of the `API_KEY`. 
-2. **Modify Deployment YAML**:
-   - Edit the `aps-all-in-one.yaml` file.
-   - Replace the placeholders with the configurations you retrieved:
-     - `AZURE_OPENAI_DEPLOYMENT_NAME`: Enter the deployment name for GPT-4.
-     - `AZURE_OPENAI_ENDPOINT`: Enter the endpoint URL for the GPT-4 deployment.
-     - `AZURE_OPENAI_DALLE_ENDPOINT`: Enter the endpoint URL for the DALL-E 3 deployment.
-     - `AZURE_OPENAI_DALLE_DEPLOYMENT_NAME`: Enter the deployment name for DALL-E 3.
-
-   Example configuration in the YAML file:
-   ```yaml
-   - name: AZURE_OPENAI_API_VERSION
-     value: "2024-07-01-preview"
-   - name: AZURE_OPENAI_DEPLOYMENT_NAME
-     value: "gpt-4-deployment"
-   - name: AZURE_OPENAI_ENDPOINT
-     value: "https://<your-openai-resource-name>.openai.azure.com/"
-   - name: AZURE_OPENAI_DALLE_ENDPOINT
-     value: "https://<your-openai-resource-name>.openai.azure.com/"
-   - name: AZURE_OPENAI_DALLE_DEPLOYMENT_NAME
-     value: "dalle-3-deployment"
-   ```
-
-## Step 4: Deploy the ConfigMaps and Secrets
-- Deploy the ConfigMap for RabbitMQ Plugins:
    ```bash
-   kubectl apply -f config-maps.yaml
+   mkdir -p "$HOME/.config/cst8915/lab8"
+   LAB8_SECRET_FILE="$HOME/.config/cst8915/lab8/secrets.yaml"
+   install -m 600 secrets.example.yaml "$LAB8_SECRET_FILE"
    ```
-- Create and Deploy the Secret for OpenAI API:  
-   - Make sure that you have replaced Base64-encoded-API-KEY in secrets.yaml with your Base64-encoded OpenAI API key.
-   ```bash
-   kubectl apply -f secrets.yaml
-   ```
-- Verify:
-   ```bash
-   kubectl get configmaps
-   kubectl get secrets
-   ```
+
+5. Edit the private copy and replace each placeholder with the corresponding Azure resource key. If both deployments use the same resource, enter its key in both fields. The example uses Kubernetes `stringData`, so enter the keys as supplied. Keep credentials out of your submission, screenshots, and video.
+
+## Step 4: Deploy the ConfigMap and Secrets
+
+Run these commands from `Deployment Files` in the same terminal where you set `LAB8_SECRET_FILE`. For the Brightspace path, this variable points to the file you downloaded. For the Azure path, it points to your private copy.
+
+```bash
+kubectl apply -f config-maps.yaml
+kubectl apply -f "$LAB8_SECRET_FILE"
+kubectl get configmap rabbitmq-enabled-plugins
+kubectl get secret openai-gpt-api-secret openai-dalle-api-secret
+```
 
 ## Step 5: Deploy the Application
    ```bash
@@ -239,8 +175,8 @@ kubectl get pods
 
 ## Step 8: Explore Advanced Features
 ### AI-Generated Descriptions and Images:
-- Use the AI Service for generating product descriptions and images.
-- Ensure your OpenAI API key is correctly configured in the deployed secret.
+- In Store Admin, open the form to add a product. Enter a name, a positive price, and keywords. Select **Ask AI Assistant**, then **Generate Image**.
+- Save the product, refresh Store Front, and open its product detail page. Verify that both the generated description and the photo appear.
 ### RabbitMQ Management:
 - Access the RabbitMQ management UI:
    ```bash
@@ -257,9 +193,9 @@ In this section, you will use the MongoDB shell to interact with the `orderdb` d
 #### **1- Access the MongoDB Shell**
 Run the following command to connect to the MongoDB shell inside the running MongoDB pod:
 ```bash
-kubectl exec -it <mongodb-pod-name> -- mongo
+kubectl exec -it mongodb-0 -- mongosh
 ```
-Explanation: This command uses kubectl exec to open an interactive shell (-it) inside the MongoDB pod and starts the MongoDB shell program (mongo).
+Explanation: This command uses kubectl exec to open an interactive shell (-it) inside the MongoDB pod and starts the MongoDB shell program (`mongosh`).
 
 #### **2- List All Databases**
 Once inside the MongoDB shell, run:
@@ -317,12 +253,14 @@ You are asked to fork the necessary service repositories, build Docker images fo
 ---
 ### **Step 2: Build and Push Docker Images**
 ---
-### **Step 3: Update `aps-all-in-one.yaml`**
+### **Step 3: Update the deployment images**
+
+Use your own image tags for the six application services in `aps-all-in-one.yaml` and for both simulators in `admin-tasks.yaml`. Apply both files and verify the running image names.
 ---
 ### **Step 4: Test the Application**
 
 ## **Task 2: Improving and Extending the Deployment**
-Currently, the deployment YAML runs `MongoDB` and `RabbitMQ` inside the Kubernetes cluster, but data is **ephemeral**. If the pods are deleted or the cluster restarts, all messages and database data are lost.
+The starter keeps MongoDB and RabbitMQ data in ephemeral container storage. For Task 2, deploy into a fresh namespace so you can add volume claim templates and change the MongoDB Service to headless. Apply the ConfigMap, private Secrets, and application manifest in that namespace before testing.
 
 **Your tasks are to:**
 - **Make MongoDB capable of high availability (replication) and persistent storage:**
@@ -331,13 +269,14 @@ Currently, the deployment YAML runs `MongoDB` and `RabbitMQ` inside the Kubernet
       - It has at least 3 replicas (`replicas: 3`).
       - Each replica has its own `PersistentVolumeClaim (PVC)` using a `volumeClaimTemplates` section.
       - The service becomes headless (`clusterIP: None`) for stable DNS names (`mongodb-0.mongodb`, etc.).
+      - Configure and initialize the MongoDB replica set, and point the makeline service at it. In the demo, show the primary and two secondaries with `rs.status()` and retrieve the same order after a pod replacement.
 - **Enable RabbitMQ to store messages persistently:**
    - Currently, RabbitMQ data (queues, messages) disappears when the pod restarts.
    - Update the RabbitMQ StatefulSet to:
       - Mount a persistent volume at /var/lib/rabbitmq.
       - Use a volumeClaimTemplates block to create per-pod PVCs
       - Ensure the config map (plugins, definitions) remains mounted.
-      - **Hint:** RabbitMQ stores its data in /var/lib/rabbitmq. Use PersistentVolumeClaim templates similar to MongoDB’s.
+      - To demonstrate persistence, pause the simulators and close the Store Admin orders view so it cannot drain the queue. Place an identifiable order in the durable queue, replace the RabbitMQ pod, and verify the same order is still queued.
 - **Investigate what Azure managed services could replace self-hosted MongoDB and RabbitMQ.**
    - For each service:
       - Give its name and purpose.
@@ -359,6 +298,7 @@ Currently, the deployment YAML runs `MongoDB` and `RabbitMQ` inside the Kubernet
          - Written explanation of your solution to Task 2  
          - Your updated `aps-all-in-one-Task1.yaml` file used for Task 1
          - Your updated `aps-all-in-one-Task2.yaml` file used for Task 2
+         - Your updated `admin-tasks.yaml` with both simulator image tags
 
 ### How to Submit
 - Push your work to a **public GitHub repository** (the submission repository).  
