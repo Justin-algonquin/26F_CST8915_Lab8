@@ -257,45 +257,26 @@ Use your own image tags for the six application services in `aps-all-in-one.yaml
 ---
 ### **Step 4: Test the Application**
 
-## **Task 2: Improving and Extending the Deployment**
-The starter keeps MongoDB and RabbitMQ data in ephemeral container storage. For Task 2, deploy into a fresh namespace so you can add volume claim templates and change the MongoDB Service to headless. Apply the ConfigMap, private Secrets, and application manifest in that namespace before testing.
+## **Task 2: Investigate Azure Managed Services**
 
-**Your tasks are to:**
-- **Make MongoDB capable of high availability (replication) and persistent storage:**
-   - Research PersistentVolumeClaim (PVC) and what a MongoDB Replica Set is and how it improves availability.
-   - Modify the existing StatefulSet so that:
-      - It has at least 3 replicas (`replicas: 3`).
-      - Each replica has its own `PersistentVolumeClaim (PVC)` using a `volumeClaimTemplates` section.
-      - The service becomes headless (`clusterIP: None`) for stable DNS names (`mongodb-0.mongodb`, etc.).
-      - Configure and initialize the MongoDB replica set, and point the makeline service at it. In the demo, show the primary and two secondaries with `rs.status()` and retrieve the same order after a pod replacement.
-- **Enable RabbitMQ to store messages persistently:**
-   - Currently, RabbitMQ data (queues, messages) disappears when the pod restarts.
-   - Update the RabbitMQ StatefulSet to:
-      - Mount a persistent volume at /var/lib/rabbitmq.
-      - Use a volumeClaimTemplates block to create per-pod PVCs
-      - Ensure the config map (plugins, definitions) remains mounted.
-      - To demonstrate persistence, pause the simulators and close the Store Admin orders view so it cannot drain the queue. Place an identifiable order in the durable queue, replace the RabbitMQ pod, and verify the same order is still queued.
 - **Investigate what Azure managed services could replace self-hosted MongoDB and RabbitMQ.**
    - For each service:
       - Give its name and purpose.
-      - Explain why it’s a good fit (e.g., scaling, backups, availability).
+      - Explain why it’s a good fit and what problem it solves.
+
 ## Submission
 
 ### What to Submit
 1. **Demo Video (Max 5 minutes)**  
-   - Record a short demo video for the lab that includes:
-      - Deploying the Algonquin Pet Store application using your updated  `aps-all-in-one.yaml` file (from Task 1).
-      - Prove MongoDB persistence + replica set (from Task 2).
-      - Prove RabbitMQ persistence (from Task 2).
+   - Show how you deploy the Algonquin Pet Store application using your updated `aps-all-in-one.yaml` file from Task 1.
 
 2. **GitHub Repository (Submission Repo)**  
    - You must create **one GitHub repository** for your lab submission.  
    - This submission repository must include:  
      - A `README.md` file with:  
          - The YouTube demo video link
-         - Written explanation of your solution to Task 2  
+         - Your findings on Azure managed services from Task 2
          - Your updated `aps-all-in-one-Task1.yaml` file used for Task 1
-         - Your updated `aps-all-in-one-Task2.yaml` file used for Task 2
          - Your updated `admin-tasks.yaml` with both simulator image tags
 
 ### How to Submit
