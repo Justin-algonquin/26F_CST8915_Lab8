@@ -16,7 +16,7 @@ spec:
         "kubernetes.io/os": linux
       containers:
         - name: virtual-customer
-          image: ramymohamed/virtual-customer:lab8
+          image: justinjunior/virtual-customer:lab8
           imagePullPolicy: Always
           env:
             - name: ORDER_SERVICE_URL
@@ -49,7 +49,7 @@ spec:
         "kubernetes.io/os": linux
       containers:
         - name: virtual-worker
-          image: ramymohamed/virtual-worker:lab8
+          image: justinjunior/virtual-worker:lab8
           imagePullPolicy: Always
           env:
             - name: MAKELINE_SERVICE_URL
