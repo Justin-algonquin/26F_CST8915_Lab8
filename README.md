@@ -90,7 +90,7 @@ Using managed Azure services can reduce maintenance and improve reliability. It 
 
 ## Demo Video
 
-YouTube video: To be added after recording.
+YouTube video: https://youtu.be/GHOujb3krKY
 
 ## References
 
