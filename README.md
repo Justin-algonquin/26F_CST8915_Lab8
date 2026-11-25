@@ -34,3 +34,67 @@ You can use the kubernetes YAML files provided in the [Deployment Files](./Deplo
 
 
 
+
+---
+
+## Lab 8 - My Deployment
+
+I deployed the Algonquin Pet Store application to Azure Kubernetes Service (AKS).
+
+I created an AKS cluster with two worker nodes in Mexico Central. I built eight Docker images from my forked repositories and pushed them to my Docker Hub account, `justinjunior`.
+
+I updated the Kubernetes YAML files to use my own Docker images.
+
+### Task 1 - Deployment Files
+
+- [Updated application deployment YAML](./Deployment%20Files/aps-all-in-one-Task1.yaml)
+- [Updated virtual customer and worker YAML](./Deployment%20Files/admin-tasks.yaml)
+
+I tested the Store Front and Store Admin applications. I also verified that the virtual customer creates orders and the virtual worker processes them.
+
+I scaled the order-service deployment to three replicas and checked CPU and memory usage using kubectl.
+
+Finally, I tested the AI service by generating a product description and image. I saved the new product and verified that it appeared in the Store Front application.
+
+## Task 2 - Azure Managed Services
+
+### 1. Azure Cosmos DB for MongoDB
+
+Azure Cosmos DB for MongoDB is a managed database service that supports MongoDB-compatible applications.
+
+In this lab, MongoDB stores application data. Azure Cosmos DB for MongoDB could replace the MongoDB container running in Kubernetes.
+
+This is a good solution because Azure manages much of the database infrastructure, availability, backups, and scaling. It reduces the work needed to maintain a database server.
+
+It also helps improve reliability because the database does not depend on a single MongoDB container in the AKS cluster.
+
+Some connection settings and compatibility requirements would need to be checked before migration.
+
+### 2. Azure Service Bus
+
+Azure Service Bus is a managed messaging service that allows applications to communicate using queues and topics.
+
+In this lab, RabbitMQ helps services exchange messages for order processing.
+
+Azure Service Bus could provide managed queues for sending orders between services.
+
+It is a good solution because Azure manages the messaging infrastructure. It supports reliable message delivery, retries, and dead-letter queues.
+
+This reduces the need to install, monitor, and maintain a RabbitMQ server inside Kubernetes.
+
+However, Azure Service Bus is not a direct RabbitMQ replacement. The applications would need changes to their messaging clients and configuration.
+
+### Conclusion
+
+Using managed Azure services can reduce maintenance and improve reliability. It also allows developers to focus more on their applications instead of managing databases and messaging servers.
+
+## Demo Video
+
+YouTube video: To be added after recording.
+
+## References
+
+- [Azure Cosmos DB for MongoDB documentation](https://learn.microsoft.com/en-us/azure/cosmos-db/mongodb/introduction)
+- [Azure Service Bus documentation](https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-messaging-overview)
+- [Azure Kubernetes Service documentation](https://learn.microsoft.com/en-us/azure/aks/)
+
